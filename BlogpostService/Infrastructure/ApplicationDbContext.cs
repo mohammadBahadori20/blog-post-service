@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BlogpostService.Infrastructure;
 
-public class ApplicationDbContext : DbContext, BlogpostRepo
+public class ApplicationDbContext : DbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> dbContextOptions) : base()
     {
