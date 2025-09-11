@@ -54,7 +54,7 @@ public class AuthorService : IAuthorService
     {
         Author author = new Author()
         {
-            AuthorId = Guid.NewGuid(),
+            AuthorId = HttpContext.,
             Username = authorDto.Username
         };
 

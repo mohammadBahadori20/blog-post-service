@@ -31,7 +31,7 @@ public class BlogpostService : IBlogpostService
         return blogpost.Comments.Select(cm => new CommentDto()
         {
             Content = cm.Content,
-            Author = cm.Author,
+            Username = cm.Author.Username!,
             CreatedAt = cm.CreatedAt,
             Replies = cm.Replies
         }).ToList();
@@ -51,5 +51,13 @@ public class BlogpostService : IBlogpostService
         blogpostDto.Comments = new Uri($"http://{_host}:{_port}/api/blogpost/{blogpost.BlogPostId}");
         await _repo.AddNewBlogpostForAuthor(blogpost, authorUsername);
         return blogpostDto;
+    }
+
+    public async Task AddNewCommentForBlogpost(CommentDto commentDto, string blogpostId)
+    {
+        Author? author = await _repo.GetAuthorByUsername(commentDto.Username);
+        Blogpost? blogpost = await _repo.GetBlogpostById(blogpostId);
+        
+        
     }
 }

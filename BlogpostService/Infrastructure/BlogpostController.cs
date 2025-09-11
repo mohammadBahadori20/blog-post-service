@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 using BlogpostService.Application.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -43,10 +44,10 @@ public class BlogpostController : ControllerBase
         await _blogpostService.AddNewBlogpostForAuthor(blogpostDto, authorUsername);
         return blogpostDto;
     }
-
+    
     [HttpPost("{blogpostId}/comment")]
     public async Task<ActionResult<CommentDto>> AddNewCommentForBlogpost([FromBody] CommentDto commentDto,
-        [FromRoute] string blogpostId)
+        [FromRoute][Required] string blogpostId)
     {
         
     }

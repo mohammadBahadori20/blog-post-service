@@ -10,41 +10,41 @@ public class ApplicationDbContext : DbContext
     }
     
     public DbSet<Blogpost> Blogposts { get; set; }
-    public DbSet<Author> Authors { get; set; }
-
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Author>()
-            .HasMany(a => a.Blogposts)
-            .WithOne() // uni directional relation
-            .HasForeignKey("AuthorId");
 
-        // Blogpost owns Comments
-        modelBuilder.Entity<Blogpost>()
-            .OwnsMany(b => b.Comments, cb =>
+        modelBuilder.Entity<Blogpost>(b =>
+        {
+            b.HasKey(bp => bp.BlogPostId);
+
+            b.OwnsMany(bp => bp.Comments, cb =>
             {
-                cb.WithOwner().HasForeignKey("BlogPostId");
-                cb.Property<Guid>("Id");
-                cb.HasKey("Id");
+                cb.WithOwner().HasForeignKey("BlogPostId");        
+                cb.ToTable("BlogPostComments");                  
 
-                // Comment owns Author (nested)
-                cb.HasOne(a => a.Author)
-                    .WithMany(a => a.Comments)
-                    .HasForeignKey("AuthorId");
+                // shadow key for comment row
+                cb.Property<Guid>("CommentId");
+                cb.HasKey("CommentId");
 
-                // Comment owns Replies (recursive)
+                // map the FK to BlogPostId as required
+                cb.Property<Guid>("BlogPostId");
+
+                // Owned collection of replies (nested)
                 cb.OwnsMany(c => c.Replies, rb =>
                 {
-                    rb.WithOwner().HasForeignKey("ParentCommentId");
-                    rb.Property<Guid>("Id");
-                    rb.HasKey("Id");
+                    rb.WithOwner().HasForeignKey("ParentCommentId");   
+                    rb.ToTable("BlogPostCommentReplies");              
 
-                    // Replies also own their Author
-                    rb.HasOne(a => a.Author)
-                        .WithMany(a => a.Comments)
-                        .HasForeignKey("AuthorId");
+                    // shadow key for reply row
+                    rb.Property<Guid>("ReplyId");
+                    rb.HasKey("ReplyId");
+
+                    // include the ParentCommentId column for replies
+                    rb.Property<Guid>("ParentCommentId");
                 });
             });
+        });
+
     }
 }

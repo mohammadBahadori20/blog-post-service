@@ -3,7 +3,7 @@ using BlogpostService.Application;
 using BlogpostService.Application.DTOs;
 using BlogpostService.Domain;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
+
 
 namespace BlogpostService.Infrastructure;
 
@@ -70,5 +70,7 @@ public class AuthorController : ControllerBase
         await _authorService.AddNewAuthor(authorDto);
         return authorDto;
     }
+    
+    
     
 }
