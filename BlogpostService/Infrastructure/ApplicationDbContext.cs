@@ -22,8 +22,8 @@ public class ApplicationDbContext : DbContext
             {
                 cb.WithOwner().HasForeignKey("BlogPostId");        
                 cb.ToTable("BlogPostComments");                  
-
-                // shadow key for comment row
+                
+                //assigning commentId as primary key
                 cb.Property<Guid>("CommentId");
                 cb.HasKey("CommentId");
 

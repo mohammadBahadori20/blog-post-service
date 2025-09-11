@@ -19,7 +19,8 @@ public class BlogpostController : ControllerBase
 
 
     [HttpGet("{blogpostId}")]
-    public async Task<ActionResult<List<CommentDto>>> GetBlogpostComments([FromRoute] [Required] string blogpostId)
+    public async Task<ActionResult<List<CommentDto>>> GetBlogpostComments(
+        [FromRoute][Required(ErrorMessage = "the blogpost ID should be supplied")] string blogpostId)
     {
         List<CommentDto>? commentDto = await _blogpostService.GetBlogpostComments(blogpostId);
 
@@ -44,11 +45,10 @@ public class BlogpostController : ControllerBase
         await _blogpostService.AddNewBlogpostForAuthor(blogpostDto, authorUsername);
         return blogpostDto;
     }
-    
+
     [HttpPost("{blogpostId}/comment")]
     public async Task<ActionResult<CommentDto>> AddNewCommentForBlogpost([FromBody] CommentDto commentDto,
-        [FromRoute][Required] string blogpostId)
+        [FromRoute] [Required] string blogpostId)
     {
-        
     }
 }
