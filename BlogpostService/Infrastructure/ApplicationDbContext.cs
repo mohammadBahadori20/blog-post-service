@@ -24,7 +24,6 @@ public class ApplicationDbContext : DbContext
                 cb.ToTable("BlogPostComments");                  
                 
                 //assigning commentId as primary key
-                cb.Property<Guid>("CommentId");
                 cb.HasKey("CommentId");
 
                 // map the FK to BlogPostId as required

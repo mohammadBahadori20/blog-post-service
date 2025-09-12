@@ -46,9 +46,9 @@ public class BlogpostController : ControllerBase
         return blogpostDto;
     }
 
-    [HttpPost("{blogpostId}/comment")]
-    public async Task<ActionResult<CommentDto>> AddNewCommentForBlogpost([FromBody] CommentDto commentDto,
-        [FromRoute] [Required] string blogpostId)
-    {
-    }
+    // [HttpPost("{blogpostId}/comment")]
+    // public async Task<ActionResult<CommentDto>> AddNewCommentForBlogpost([FromBody] CommentDto commentDto,
+    //     [FromRoute] [Required] string blogpostId)
+    // {
+    // }
 }

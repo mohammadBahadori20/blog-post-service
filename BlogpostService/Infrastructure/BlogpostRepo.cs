@@ -13,20 +13,9 @@ public class BlogpostRepo : IBlogpostRepo
         _context = context;
     }
 
-    public async Task<Author?> GetAuthorByUsername(string username)
-    {
-        Author? author = await _context.Authors.FirstOrDefaultAsync(a => a.Username == username);
-        return author;
-    }
-
     public async Task<Blogpost?> GetBlogpostById(string blogpostId)
     {
         throw new NotImplementedException();
-    }
-
-    public async Task AddNewAuthor(Author author)
-    {
-        await _context.Authors.AddAsync(author);
     }
 
     public async Task AddNewBlogpostForAuthor(Blogpost blogpost, string authorUsername)

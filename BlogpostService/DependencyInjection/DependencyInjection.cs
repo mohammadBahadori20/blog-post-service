@@ -9,7 +9,7 @@ public static class DependencyInjection
 {
     public static void DependencyInjectionMapper(this IServiceCollection service)
     {
-        service.AddTransient<IAuthorService,AuthorService>();
+        service.AddTransient<IUserServcie,UserService>();
         service.AddTransient<IBlogpostService,Application.BlogpostService>();
         service.AddTransient<IBlogpostRepo,BlogpostRepo>();
 
