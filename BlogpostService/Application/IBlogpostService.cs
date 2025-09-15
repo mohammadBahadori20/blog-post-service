@@ -9,4 +9,5 @@ public interface IBlogpostService
 
     public Task<BlogpostDto> AddNewBlogpostForAuthor(BlogpostDto blogpostDto, string authorUsername);
 
+    public Task<CommentDto?> AddNewCommentForBlogpost(CommentDto commentDto, string blogpostId, string authorId);
 }

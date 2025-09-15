@@ -1,12 +1,11 @@
-using BlogpostService.Application.DTOs;
+
 using BlogpostService.Domain;
-using Microsoft.EntityFrameworkCore;
 
 namespace BlogpostService.Infrastructure;
 
 public class BlogpostRepo : IBlogpostRepo
 {
-    private ApplicationDbContext _context;
+    private readonly ApplicationDbContext _context;
 
     public BlogpostRepo(ApplicationDbContext context)
     {
@@ -18,8 +17,13 @@ public class BlogpostRepo : IBlogpostRepo
         throw new NotImplementedException();
     }
 
-    public async Task AddNewBlogpostForAuthor(Blogpost blogpost, string authorUsername)
+    public async Task AddNewBlogpostForAuthor(Blogpost blogpost)
     {
         await _context.Blogposts.AddAsync(blogpost);
+    }
+
+    public async Task SaveChanges()
+    {
+        await _context.SaveChangesAsync();
     }
 }

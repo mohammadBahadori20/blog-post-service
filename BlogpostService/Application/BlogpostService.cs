@@ -9,17 +9,17 @@ public class BlogpostService : IBlogpostService
 {
     private readonly IBlogpostRepo _repo;
     private readonly IConfiguration _configuration;
-    private readonly IUserServcie _userServcie;
+    private readonly IUserServcie _userService;
     private readonly string _host;
     private readonly string _port;
 
-    public BlogpostService(IBlogpostRepo repo, IConfiguration configuration,IUserServcie userServcie)
+    public BlogpostService(IBlogpostRepo repo, IConfiguration configuration,IUserServcie userService)
     {
         _repo = repo;
         _configuration = configuration;
         _host = _configuration["host"]!;
         _port = _configuration["port"]!;
-        _userServcie = userServcie;
+        _userService = userService;
     }
 
     public async Task<List<CommentDto>?> GetBlogpostComments(string blogpostId)
@@ -42,24 +42,37 @@ public class BlogpostService : IBlogpostService
     {
         Blogpost blogpost = new Blogpost()
         {
-            BlogPostId = Guid.NewGuid(),
-            Content = blogpostDto.Content,
-            Title = blogpostDto.Title,
-            PublishedAt = blogpostDto.PublishedAt,
             AuthorId = authorId,
+            BlogPostId = Guid.NewGuid().ToString(),
+            Description = blogpostDto.Description,
+            Title = blogpostDto.Title,
+            PublishedAt = DateTime.UtcNow
         };
 
         blogpostDto.BlogPostId = blogpost.BlogPostId;
         blogpostDto.Comments = new Uri($"http://{_host}:{_port}/api/blogpost/{blogpost.BlogPostId}");
-        await _repo.AddNewBlogpostForAuthor(blogpost, authorUsername);
+        await _repo.AddNewBlogpostForAuthor(blogpost);
         return blogpostDto;
     }
 
-    // public async Task AddNewCommentForBlogpost(CommentDto commentDto, string blogpostId)
-    // {
-    //     Author? author = await _repo.GetAuthorByUsername(commentDto.Username);
-    //     Blogpost? blogpost = await _repo.GetBlogpostById(blogpostId);
-    //     
-    //     
-    // }
+    public async Task<CommentDto?> AddNewCommentForBlogpost(CommentDto commentDto, string blogpostId,string authorId)
+    {
+        Blogpost? blogpost = await _repo.GetBlogpostById(blogpostId);
+        if (blogpost == null)
+        {
+            return null;
+        }
+        
+        Comment comment = new Comment()
+        {
+            AuthorId = authorId,
+            BlogPostId = blogpostId,
+            CommentId = Guid.NewGuid().ToString(),
+            Content = commentDto.Content ?? string.Empty,
+            CreatedAt = DateTime.UtcNow.Date
+        };
+        blogpost.AddNewComment(comment);
+        await _repo.SaveChanges();
+        return commentDto;
+    }
 }

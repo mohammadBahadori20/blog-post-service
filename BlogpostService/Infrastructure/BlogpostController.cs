@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using BlogpostService.Application.DTOs;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
+
 
 namespace BlogpostService.Infrastructure;
 
@@ -20,7 +20,8 @@ public class BlogpostController : ControllerBase
 
     [HttpGet("{blogpostId}")]
     public async Task<ActionResult<List<CommentDto>>> GetBlogpostComments(
-        [FromRoute][Required(ErrorMessage = "the blogpost ID should be supplied")] string blogpostId)
+        [FromRoute] [Required(ErrorMessage = "the blogpost ID should be supplied")]
+        string blogpostId)
     {
         List<CommentDto>? commentDto = await _blogpostService.GetBlogpostComments(blogpostId);
 
@@ -28,7 +29,7 @@ public class BlogpostController : ControllerBase
         {
             return BadRequest(new ApiErrorResponse()
             {
-                StatusCode = 404,
+                StatusCode = 400,
                 Title = "Username not found.",
                 Detail = $"The blogpost with {blogpostId} cannot be found"
             });
@@ -38,17 +39,33 @@ public class BlogpostController : ControllerBase
     }
 
 
+    //user must be authenticated here.
     [HttpPost]
-    public async Task<ActionResult<BlogpostDto>> AddNewBlogpost([FromBody] BlogpostDto blogpostDto,
-        [FromQuery] string authorUsername)
+    public async Task<ActionResult<BlogpostDto>> AddNewBlogpost([FromBody] BlogpostDto blogpostDto)
     {
-        await _blogpostService.AddNewBlogpostForAuthor(blogpostDto, authorUsername);
+        await _blogpostService.AddNewBlogpostForAuthor(blogpostDto,
+            User.Claims.FirstOrDefault(c => c.Type == "sub")!.Value);
         return blogpostDto;
     }
 
-    // [HttpPost("{blogpostId}/comment")]
-    // public async Task<ActionResult<CommentDto>> AddNewCommentForBlogpost([FromBody] CommentDto commentDto,
-    //     [FromRoute] [Required] string blogpostId)
-    // {
-    // }
+
+    //user must be authenticated here.
+    [HttpPost("{blogpostId}/comment")]
+    public async Task<ActionResult<CommentDto>> AddNewCommentForBlogpost([FromBody] CommentDto commentDto,
+        [FromRoute] [Required] string blogpostId)
+    {
+        string authorId = User.Claims.FirstOrDefault(c => c.Type == "sub")!.Value; 
+        CommentDto? responseComment =  await _blogpostService.AddNewCommentForBlogpost(commentDto, blogpostId, authorId);
+        if (responseComment is null)
+        {
+            return BadRequest(new ApiErrorResponse()
+            {
+                StatusCode = 400,
+                Title = "Username not found.",
+                Detail = $"The blogpost with {blogpostId} cannot be found"
+            });
+        }
+
+        return responseComment;
+    }
 }

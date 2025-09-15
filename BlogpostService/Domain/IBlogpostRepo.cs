@@ -4,5 +4,8 @@ public interface IBlogpostRepo
 {
     Task<Blogpost?> GetBlogpostById(string blogpostId);
 
-    public Task AddNewBlogpostForAuthor(Blogpost blogpost, string authorId);
+    public Task AddNewBlogpostForAuthor(Blogpost blogpost);
+
+    public Task SaveChanges();
+    
 }
