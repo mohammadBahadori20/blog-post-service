@@ -7,5 +7,6 @@ public interface IBlogpostRepo
     public Task AddNewBlogpostForAuthor(Blogpost blogpost);
 
     public Task SaveChanges();
-    
+
+    public Task<bool>  DeleteBlogpost(string blogpostId);
 }

@@ -5,9 +5,11 @@ namespace BlogpostService.Infrastructure;
 
 public interface IBlogpostService
 {
-    public Task<List<CommentDto>?> GetBlogpostComments(string blogpostId);
+    public Task<List<CommentDto>?> GetBlogpostCommentsById(string blogpostId);
 
-    public Task<BlogpostDto> AddNewBlogpostForAuthor(BlogpostDto blogpostDto, string authorUsername);
+    public Task<BlogpostDto> PublishBlogpost(BlogpostDto blogpostDto, string authorUsername);
 
-    public Task<CommentDto?> AddNewCommentForBlogpost(CommentDto commentDto, string blogpostId, string authorId);
+    public Task<CommentDto?> CreateCommentForBlogpost(CommentDto commentDto, string blogpostId, string authorId);
+
+    public Task<bool> DeleteBlogpost(string blogpostId);
 }

@@ -13,7 +13,7 @@ public class BlogpostService : IBlogpostService
     private readonly string _host;
     private readonly string _port;
 
-    public BlogpostService(IBlogpostRepo repo, IConfiguration configuration,IUserServcie userService)
+    public BlogpostService(IBlogpostRepo repo, IConfiguration configuration, IUserServcie userService)
     {
         _repo = repo;
         _configuration = configuration;
@@ -22,7 +22,7 @@ public class BlogpostService : IBlogpostService
         _userService = userService;
     }
 
-    public async Task<List<CommentDto>?> GetBlogpostComments(string blogpostId)
+    public async Task<List<CommentDto>?> GetBlogpostCommentsById(string blogpostId)
     {
         Blogpost? blogpost = await _repo.GetBlogpostById(blogpostId);
         if (blogpost is null)
@@ -38,7 +38,7 @@ public class BlogpostService : IBlogpostService
         }).ToList();
     }
 
-    public async Task<BlogpostDto> AddNewBlogpostForAuthor(BlogpostDto blogpostDto, string authorId)
+    public async Task<BlogpostDto> PublishBlogpost(BlogpostDto blogpostDto, string authorId)
     {
         Blogpost blogpost = new Blogpost()
         {
@@ -55,14 +55,14 @@ public class BlogpostService : IBlogpostService
         return blogpostDto;
     }
 
-    public async Task<CommentDto?> AddNewCommentForBlogpost(CommentDto commentDto, string blogpostId,string authorId)
+    public async Task<CommentDto?> CreateCommentForBlogpost(CommentDto commentDto, string blogpostId, string authorId)
     {
         Blogpost? blogpost = await _repo.GetBlogpostById(blogpostId);
         if (blogpost == null)
         {
             return null;
         }
-        
+
         Comment comment = new Comment()
         {
             AuthorId = authorId,
@@ -74,5 +74,10 @@ public class BlogpostService : IBlogpostService
         blogpost.AddNewComment(comment);
         await _repo.SaveChanges();
         return commentDto;
+    }
+
+    public async Task<bool> DeleteBlogpost(string blogpostId)
+    {
+        return await _repo.DeleteBlogpost(blogpostId);
     }
 }

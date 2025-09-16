@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.Security.Claims;
 using BlogpostService.Application.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,15 +22,15 @@ public class BlogpostController : ControllerBase
         [FromRoute] [Required(ErrorMessage = "the blogpost ID should be supplied")]
         string blogpostId)
     {
-        List<CommentDto>? commentDto = await _blogpostService.GetBlogpostComments(blogpostId);
+        List<CommentDto>? commentDto = await _blogpostService.GetBlogpostCommentsById(blogpostId);
 
         if (commentDto is null)
         {
-            return BadRequest(new ApiErrorResponse()
+            return NotFound(new ApiErrorResponse()
             {
-                StatusCode = 400,
+                StatusCode = 404,
                 Title = "Username not found.",
-                Detail = $"The blogpost with {blogpostId} cannot be found"
+                Detail = $"The blogpost with ID: {blogpostId} cannot be found"
             });
         }
 
@@ -43,7 +42,7 @@ public class BlogpostController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<BlogpostDto>> AddNewBlogpost([FromBody] BlogpostDto blogpostDto)
     {
-        await _blogpostService.AddNewBlogpostForAuthor(blogpostDto,
+        await _blogpostService.PublishBlogpost(blogpostDto,
             User.Claims.FirstOrDefault(c => c.Type == "sub")!.Value);
         return blogpostDto;
     }
@@ -55,17 +54,37 @@ public class BlogpostController : ControllerBase
         [FromRoute] [Required] string blogpostId)
     {
         string authorId = User.Claims.FirstOrDefault(c => c.Type == "sub")!.Value; 
-        CommentDto? responseComment =  await _blogpostService.AddNewCommentForBlogpost(commentDto, blogpostId, authorId);
+        CommentDto? responseComment =  await _blogpostService.CreateCommentForBlogpost(commentDto, blogpostId, authorId);
         if (responseComment is null)
         {
-            return BadRequest(new ApiErrorResponse()
+            return NotFound(new ApiErrorResponse()
             {
-                StatusCode = 400,
-                Title = "Username not found.",
-                Detail = $"The blogpost with {blogpostId} cannot be found"
+                StatusCode = 404,
+                Title = "blogpost not found.",
+                Detail = $"The blogpost with ID: {blogpostId} cannot be found"
             });
         }
 
         return responseComment;
     }
+
+    //user must be authenticated here.
+    [HttpDelete("{blogpostId}")]
+    public async Task<IActionResult> DeleteBlogpost([FromRoute] string blogpostId)
+    {
+        bool state = await _blogpostService.DeleteBlogpost(blogpostId);
+        if (state)
+        {
+            
+            return NotFound(new ApiErrorResponse()
+            {
+                StatusCode = 404,
+                Title = "blogpost not found.",
+                Detail = $"The blogpost with ID: {blogpostId} cannot be found"
+            });
+        }
+        return NoContent();
+    }
+    
+    public async Task<ActionResult<BlogpostDto>> 
 }

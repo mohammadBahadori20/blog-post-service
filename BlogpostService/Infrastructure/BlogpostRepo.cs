@@ -1,5 +1,6 @@
 
 using BlogpostService.Domain;
+using Microsoft.EntityFrameworkCore;
 
 namespace BlogpostService.Infrastructure;
 
@@ -25,5 +26,17 @@ public class BlogpostRepo : IBlogpostRepo
     public async Task SaveChanges()
     {
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<bool> DeleteBlogpost(string blogpostId)
+    {
+        Blogpost? blogpost = await _context.Blogposts.FirstOrDefaultAsync(b => b.BlogPostId == blogpostId);
+        if (blogpost == null)
+        {
+            return false;
+        }
+        _context.Blogposts.Remove(blogpost);
+        await _context.SaveChangesAsync();
+        return true;
     }
 }
