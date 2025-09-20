@@ -11,6 +11,7 @@ public class BlogpostService : IBlogpostService
     private readonly IConfiguration _configuration;
     private readonly IUserServcie _userService;
     private readonly string _host;
+    private readonly string _scheme;
     private readonly string _port;
 
     public BlogpostService(IBlogpostRepo repo, IConfiguration configuration, IUserServcie userService)
@@ -19,6 +20,7 @@ public class BlogpostService : IBlogpostService
         _configuration = configuration;
         _host = _configuration["host"]!;
         _port = _configuration["port"]!;
+        _scheme = _configuration["scheme"]!;
         _userService = userService;
     }
 
@@ -50,12 +52,12 @@ public class BlogpostService : IBlogpostService
         };
 
         blogpostDto.BlogPostId = blogpost.BlogPostId;
-        blogpostDto.Comments = new Uri($"http://{_host}:{_port}/api/blogpost/{blogpost.BlogPostId}");
+        blogpostDto.Comments = new Uri($"{_scheme}://{_host}:{_port}/api/blogpost/{blogpost.BlogPostId}/comments");
         await _repo.AddNewBlogpostForAuthor(blogpost);
         return blogpostDto;
     }
 
-    public async Task<CommentDto?> CreateCommentForBlogpost(CommentDto commentDto, string blogpostId, string authorId)
+    public async Task<CommentDto?> AddCommentForBlogpost(CommentDto commentDto, string blogpostId, string authorId)
     {
         Blogpost? blogpost = await _repo.GetBlogpostById(blogpostId);
         if (blogpost == null)
@@ -80,4 +82,28 @@ public class BlogpostService : IBlogpostService
     {
         return await _repo.DeleteBlogpost(blogpostId);
     }
+
+    public async Task<BlogpostDto?> UpdateBlogpost(UpdatedBlogpostDto updatedBlogpost,string blogpostId)
+    {
+        Blogpost? blogpost = await _repo.GetBlogpostById(blogpostId);
+        if (blogpost == null)
+        {
+            return null;
+        }
+
+        blogpost.Description = updatedBlogpost.Description;
+        blogpost.Title = updatedBlogpost.Title;
+
+        await _repo.SaveChanges();
+
+
+        return new BlogpostDto()
+        {
+            BlogPostId = blogpostId,
+            Title = blogpost.Title,
+            Description = blogpost.Description,
+            Comments = new Uri($"{_scheme}://{_host}:{_port}/api/blogpost/{blogpost.BlogPostId}/comments")
+        };
+    }
+    
 }

@@ -49,12 +49,12 @@ public class BlogpostController : ControllerBase
 
 
     //user must be authenticated here.
-    [HttpPost("{blogpostId}/comment")]
+    [HttpPost("{blogpostId}/comments")]
     public async Task<ActionResult<CommentDto>> AddNewCommentForBlogpost([FromBody] CommentDto commentDto,
         [FromRoute] [Required] string blogpostId)
     {
-        string authorId = User.Claims.FirstOrDefault(c => c.Type == "sub")!.Value; 
-        CommentDto? responseComment =  await _blogpostService.CreateCommentForBlogpost(commentDto, blogpostId, authorId);
+        string authorId = User.Claims.FirstOrDefault(c => c.Type == "sub")!.Value;
+        CommentDto? responseComment = await _blogpostService.AddCommentForBlogpost(commentDto, blogpostId, authorId);
         if (responseComment is null)
         {
             return NotFound(new ApiErrorResponse()
@@ -75,7 +75,6 @@ public class BlogpostController : ControllerBase
         bool state = await _blogpostService.DeleteBlogpost(blogpostId);
         if (state)
         {
-            
             return NotFound(new ApiErrorResponse()
             {
                 StatusCode = 404,
@@ -83,8 +82,28 @@ public class BlogpostController : ControllerBase
                 Detail = $"The blogpost with ID: {blogpostId} cannot be found"
             });
         }
+
         return NoContent();
     }
+
+    [HttpPut("{blogpostId}")]
+    public async Task<ActionResult<UpdatedBlogpostDto>> UpdateBlogpost(
+        [Required(ErrorMessage = "The details for updating the blogpost are needed.")]
+        UpdatedBlogpostDto updatedBlogpost,
+        [FromRoute] string blogpostId)
+    {
+        BlogpostDto? blogpostDto = await _blogpostService.UpdateBlogpost(updatedBlogpost, blogpostId);
+        if (blogpostDto == null)
+        {
+            return NotFound(new ApiErrorResponse()
+            {
+                StatusCode = 404,
+                Title = "blogpost not found.",
+                Detail = $"The blogpost with ID: {blogpostId} cannot be found"
+            });
+        }
+
+        return Ok(blogpostDto);
+    }
     
-    public async Task<ActionResult<BlogpostDto>> 
 }
