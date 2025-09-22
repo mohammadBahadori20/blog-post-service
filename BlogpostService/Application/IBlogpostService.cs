@@ -5,7 +5,7 @@ namespace BlogpostService.Infrastructure;
 
 public interface IBlogpostService
 {
-    public Task<List<CommentDto>?> GetBlogpostCommentsById(string blogpostId);
+    public Task<List<CommentDto>?> GetBlogpostCommentsById(Guid blogpostId, int pageSize, int page);
 
     public Task<BlogpostDto> PublishBlogpost(BlogpostDto blogpostDto, string authorUsername);
 
@@ -13,5 +13,5 @@ public interface IBlogpostService
 
     public Task<bool> DeleteBlogpost(string blogpostId);
 
-    public Task<BlogpostDto?> UpdateBlogpost(UpdatedBlogpostDto updatedBlogpost,string blogpostId);
+    public Task<BlogpostDto?> UpdateBlogpost(UpdatedBlogpostDto updatedBlogpost, string blogpostId);
 }

@@ -5,7 +5,7 @@ namespace BlogpostService.Application.DTOs;
 public class BlogpostDto
 {
     [MaxLength(36)]
-    public string? BlogPostId { set; get; }
+    public Guid? BlogPostId { set; get; }
 
     [MaxLength(length: 30, ErrorMessage = "The maximum length of the title must be less than 30")]
     public string? Title { get; set; } = string.Empty;

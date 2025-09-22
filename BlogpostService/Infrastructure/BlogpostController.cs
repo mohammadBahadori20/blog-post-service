@@ -17,24 +17,24 @@ public class BlogpostController : ControllerBase
     }
 
 
-    [HttpGet("{blogpostId}")]
+    [HttpGet("{blogpostId:guid}")]
     public async Task<ActionResult<List<CommentDto>>> GetBlogpostComments(
-        [FromRoute] [Required(ErrorMessage = "the blogpost ID should be supplied")]
-        string blogpostId)
+        [FromRoute] Guid blogpostId, [FromQuery] int pageSize = 2, [FromQuery] int page = 1)
     {
-        List<CommentDto>? commentDto = await _blogpostService.GetBlogpostCommentsById(blogpostId);
+        List<CommentDto>? commentDtos =
+            await _blogpostService.GetBlogpostCommentsById(blogpostId, pageSize, page);
 
-        if (commentDto is null)
+        if (commentDtos is null)
         {
             return NotFound(new ApiErrorResponse()
             {
                 StatusCode = 404,
-                Title = "Username not found.",
+                Title = "blog post not found.",
                 Detail = $"The blogpost with ID: {blogpostId} cannot be found"
             });
         }
 
-        return commentDto;
+        return commentDtos;
     }
 
 
@@ -105,5 +105,4 @@ public class BlogpostController : ControllerBase
 
         return Ok(blogpostDto);
     }
-    
 }

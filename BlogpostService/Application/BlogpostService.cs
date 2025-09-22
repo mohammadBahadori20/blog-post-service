@@ -24,28 +24,44 @@ public class BlogpostService : IBlogpostService
         _userService = userService;
     }
 
-    public async Task<List<CommentDto>?> GetBlogpostCommentsById(string blogpostId)
+    public async Task<List<CommentDto>?> GetBlogpostCommentsById(Guid? blogpostId, int pageSize, int page)
     {
-        Blogpost? blogpost = await _repo.GetBlogpostById(blogpostId);
+        
+        Blogpost? blogpost = await _repo.GetBlogpostById(blogpostId.ToString());
+        
         if (blogpost is null)
         {
             return null;
         }
 
-        return blogpost.Comments.Select(cm => new CommentDto()
+        List<CommentDto> commentDtos = [];
+
+        if (blogpost.Comments.Count + 1 < pageSize * page)
         {
-            Content = cm.Content,
-            CreatedAt = cm.CreatedAt,
-            Replies = cm.Replies
-        }).ToList();
+            return commentDtos;
+        }
+        
+        for (int i = pageSize * (page - 1); i < pageSize * page; ++i)
+        {
+            commentDtos.Add(new CommentDto()
+            {
+                AuthorId = blogpost.Comments[i].AuthorId,
+                CommentId = blogpost.Comments[i].CommentId,
+                Content = blogpost.Comments[i].Content,
+                CreatedAt = blogpost.Comments[i].CreatedAt,
+                RepliesCount = blogpost.Comments[i].Replies.Count
+            });
+        }
+
+        return commentDtos;
     }
 
-    public async Task<BlogpostDto> PublishBlogpost(BlogpostDto blogpostDto, string authorId)
+    public async Task<BlogpostDto> PublishBlogpost(BlogpostDto blogpostDto, Guid authorId)
     {
         Blogpost blogpost = new Blogpost()
         {
             AuthorId = authorId,
-            BlogPostId = Guid.NewGuid().ToString(),
+            BlogPostId = Guid.NewGuid(),
             Description = blogpostDto.Description,
             Title = blogpostDto.Title,
             PublishedAt = DateTime.UtcNow
@@ -57,7 +73,7 @@ public class BlogpostService : IBlogpostService
         return blogpostDto;
     }
 
-    public async Task<CommentDto?> AddCommentForBlogpost(CommentDto commentDto, string blogpostId, string authorId)
+    public async Task<CommentDto?> AddCommentForBlogpost(CommentDto commentDto, Guid blogpostId, Guid authorId)
     {
         Blogpost? blogpost = await _repo.GetBlogpostById(blogpostId);
         if (blogpost == null)
@@ -69,7 +85,7 @@ public class BlogpostService : IBlogpostService
         {
             AuthorId = authorId,
             BlogPostId = blogpostId,
-            CommentId = Guid.NewGuid().ToString(),
+            CommentId = Guid.NewGuid(),
             Content = commentDto.Content ?? string.Empty,
             CreatedAt = DateTime.UtcNow.Date
         };
@@ -83,7 +99,7 @@ public class BlogpostService : IBlogpostService
         return await _repo.DeleteBlogpost(blogpostId);
     }
 
-    public async Task<BlogpostDto?> UpdateBlogpost(UpdatedBlogpostDto updatedBlogpost,string blogpostId)
+    public async Task<BlogpostDto?> UpdateBlogpost(UpdatedBlogpostDto updatedBlogpost, Guid blogpostId)
     {
         Blogpost? blogpost = await _repo.GetBlogpostById(blogpostId);
         if (blogpost == null)
@@ -105,5 +121,4 @@ public class BlogpostService : IBlogpostService
             Comments = new Uri($"{_scheme}://{_host}:{_port}/api/blogpost/{blogpost.BlogPostId}/comments")
         };
     }
-    
 }

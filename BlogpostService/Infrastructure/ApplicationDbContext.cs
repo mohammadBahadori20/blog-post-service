@@ -16,34 +16,51 @@ public class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<Blogpost>(b =>
         {
-            b.HasKey(bp => bp.BlogPostId);
+            b.ToTable("Blogposts");
 
-            b.OwnsMany(bp => bp.Comments, cb =>
-            {
-                cb.WithOwner().HasForeignKey("BlogPostId");        
-                cb.ToTable("BlogPostComments");                  
-                
-                //assigning commentId as primary key
-                cb.HasKey("CommentId");
+            b.HasKey(x => x.BlogPostId);
+            b.Property(x => x.BlogPostId)
+                .HasMaxLength(36)
+                .IsRequired()
+                .ValueGeneratedNever();
+            
+            b.Property(x => x.AuthorId).HasMaxLength(36).IsRequired(false);
+            b.Property(x => x.Title).HasMaxLength(100).IsRequired(false);
+            b.Property(x => x.Description).HasMaxLength(100).IsRequired(false);
+            b.Property(x => x.PublishedAt).IsRequired(false);
 
-                // map the FK to BlogPostId as required
-                cb.Property<Guid>("BlogPostId");
-
-                // Owned collection of replies (nested)
-                cb.OwnsMany(c => c.Replies, rb =>
-                {
-                    rb.WithOwner().HasForeignKey("ParentCommentId");   
-                    rb.ToTable("BlogPostCommentReplies");              
-
-                    // shadow key for reply row
-                    rb.Property<Guid>("ReplyId");
-                    rb.HasKey("ReplyId");
-
-                    // include the ParentCommentId column for replies
-                    rb.Property<Guid>("ParentCommentId");
-                });
-            });
+           
+            b.HasMany(x => x.Comments)
+                .WithOne(c => c.Blogpost)    
+                .HasForeignKey(c => c.BlogPostId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
+        
+        modelBuilder.Entity<Comment>(c =>
+        {
+            c.ToTable("Comments");
+
+            c.HasKey(x => x.CommentId);
+            c.Property(x => x.CommentId)
+                .HasMaxLength(36)
+                .IsRequired()
+                .ValueGeneratedNever();
+            
+            c.Property(x => x.BlogPostId).HasMaxLength(36).IsRequired();
+            c.Property(x => x.AuthorId).HasMaxLength(36).IsRequired(false);
+            c.Property(x => x.Content).IsRequired().HasMaxLength(1000);
+            c.Property(x => x.CreatedAt).IsRequired(false);
+
+            c.HasOne(x => x.Parent)
+                .WithMany(x => x.Replies)
+                .HasForeignKey(x => x.ParentId)
+                .OnDelete(DeleteBehavior.Restrict); 
+           
+            c.HasIndex(x => x.BlogPostId);
+        });
+
+        base.OnModelCreating(modelBuilder);
+
 
     }
 }

@@ -12,7 +12,6 @@ public static class DependencyInjection
         service.AddTransient<IUserServcie,UserService>();
         service.AddTransient<IBlogpostService,Application.BlogpostService>();
         service.AddTransient<IBlogpostRepo,BlogpostRepo>();
-
-
+        service.AddTransient<ICommentService,CommentService>();
     }
 }

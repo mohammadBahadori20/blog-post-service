@@ -13,9 +13,9 @@ public class BlogpostRepo : IBlogpostRepo
         _context = context;
     }
 
-    public async Task<Blogpost?> GetBlogpostById(string blogpostId)
+    public async Task<Blogpost?> GetBlogpostById(Guid blogpostId)
     {
-        throw new NotImplementedException();
+        return await _context.Blogposts.FindAsync(blogpostId.ToString());
     }
 
     public async Task AddNewBlogpostForAuthor(Blogpost blogpost)
@@ -28,7 +28,7 @@ public class BlogpostRepo : IBlogpostRepo
         await _context.SaveChangesAsync();
     }
 
-    public async Task<bool> DeleteBlogpost(string blogpostId)
+    public async Task<bool> DeleteBlogpost(Guid blogpostId)
     {
         Blogpost? blogpost = await _context.Blogposts.FirstOrDefaultAsync(b => b.BlogPostId == blogpostId);
         if (blogpost == null)
