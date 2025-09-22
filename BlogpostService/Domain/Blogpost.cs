@@ -15,10 +15,40 @@ public class Blogpost
 
     public DateTime? PublishedAt { get; set; }
 
+    public long Likes { get; set; } = 0;
+    
+    public long DisLikes { get; set; } = 0;
+
     public List<Comment> Comments { get; set; } = new();
 
     public void AddNewComment(Comment comment)
     {
         Comments.Add(comment);
+    }
+
+    public void IncrementLike()
+    {
+        Likes++;
+    }
+    
+    public void IncrementDisLike()
+    {
+        DisLikes++;
+    }
+    
+    public void DecrementLike()
+    {
+        if (Likes > 0)
+        {
+            --Likes;
+        }
+    }
+    
+    public void DecrementDisLike()
+    {
+        if (DisLikes > 0)
+        {
+            --DisLikes;
+        }
     }
 }

@@ -1,5 +1,6 @@
 using System.Text;
 using BlogpostService.Infrastructure;
+using BlogpostService.Properties.Middlewares;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -64,18 +65,23 @@ public class Program
                 {
                     OnAuthenticationFailed = context =>
                     {
-                        context.Response.StatusCode = 401;
-                        context.Response.Headers["Token_expired"] = "true";
-                        return context.Response.WriteAsync("{\"error\": \"token_expired\"}");
+                        if (context.Exception is SecurityTokenExpiredException)
+                        {
+                            context.Response.StatusCode = 401;
+                            context.Response.Headers["Token_expired"] = "true";
+                            return context.Response.WriteAsync("{\"error\": \"token_expired\"}");
+                        }
+                        
+                        return Task.CompletedTask;
                     }
                 };
             });
-
 
         var app = builder.Build();
 
         app.UseAuthentication();
         app.UseAuthorization();
+        app.UseMiddleware<ExceptionHandlerMiddleware>();
         app.MapControllers();
         app.Run();
     }

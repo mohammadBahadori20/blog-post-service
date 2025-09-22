@@ -24,10 +24,10 @@ public class BlogpostService : IBlogpostService
         _userService = userService;
     }
 
-    public async Task<List<CommentDto>?> GetBlogpostCommentsById(Guid? blogpostId, int pageSize, int page)
+    public async Task<List<CommentDto>?> GetBlogpostCommentsById(Guid blogpostId, int pageSize, int page)
     {
         
-        Blogpost? blogpost = await _repo.GetBlogpostById(blogpostId.ToString());
+        Blogpost? blogpost = await _repo.GetBlogpostById(blogpostId);
         
         if (blogpost is null)
         {
@@ -80,7 +80,7 @@ public class BlogpostService : IBlogpostService
         {
             return null;
         }
-
+        
         Comment comment = new Comment()
         {
             AuthorId = authorId,
@@ -94,7 +94,7 @@ public class BlogpostService : IBlogpostService
         return commentDto;
     }
 
-    public async Task<bool> DeleteBlogpost(string blogpostId)
+    public async Task<bool> DeleteBlogpost(Guid blogpostId)
     {
         return await _repo.DeleteBlogpost(blogpostId);
     }

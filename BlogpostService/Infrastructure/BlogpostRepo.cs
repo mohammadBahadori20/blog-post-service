@@ -39,4 +39,10 @@ public class BlogpostRepo : IBlogpostRepo
         await _context.SaveChangesAsync();
         return true;
     }
+
+    public async Task<Comment?> GetCommentById(Guid commentId)
+    {
+        return await _context.Comments.FindAsync(commentId);
+    }
+    
 }

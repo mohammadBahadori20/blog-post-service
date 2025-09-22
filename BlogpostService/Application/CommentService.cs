@@ -13,21 +13,34 @@ public class CommentService : ICommentService
     }
     
     
-    public async Task<CommentDto?> GetComment(string commentId,string blogpostId ,bool? includeReplies, int? depth)
+    public async Task<ReplyDto?> GetReplies(Guid commentId,int pageSize ,int page)
     {
-        Blogpost? blogpost = await _repo.GetBlogpostById(blogpostId);
-        if (blogpost == null)
+        Comment? comment = await _repo.GetCommentById(commentId);
+        if (comment is null)
         {
             return null;
         }
 
-        Comment? comment = blogpost.Comments.Find(c => c.CommentId == commentId);
-        if (comment == null)
+        List<CommentDto> commentDtos = [];
+        for (int i = pageSize * (page - 1); i < pageSize * page; ++i)
         {
-            return null;
+            
+           commentDtos.Add(new CommentDto()
+           {
+               AuthorId = comment.Replies[i].AuthorId,
+               CommentId = comment.Replies[i].CommentId,
+               Content = comment.Replies[i].Content,
+               CreatedAt = comment.Replies[i].CreatedAt,
+               RepliesCount = comment.Replies[i].Replies.Count
+           });
         }
 
-        
-
+        return new ReplyDto()
+        {
+            Replies = commentDtos,
+            RepliesCount = commentDtos.Count,
+            HasMore = pageSize * page < comment.Replies.Count,
+            NextPage = page * pageSize < comment.Replies.Count ? page + 1 : null
+        };
     }
 }

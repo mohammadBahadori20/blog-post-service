@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using System.Runtime.CompilerServices;
 using BlogpostService.Application;
 using BlogpostService.Application.DTOs;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace BlogpostService.Infrastructure;
 
 [ApiController]
-[Route("/api/comment")]
+[Route("/api/[controller]")]
 public class CommentController : ControllerBase
 {
 
@@ -17,13 +15,21 @@ public class CommentController : ControllerBase
     {
         _commentService = commentService;
     }
-    
-    [HttpGet("{commentId:guid}")]
-    public async Task<ActionResult<CommentDto>> AddReplyForComment([FromRoute] string commentId,
-        [FromQuery] [Required(ErrorMessage = "The includeReplies field must be supplied")] bool? includeReplies,
-        [FromQuery] [Required(ErrorMessage = "The depth field must be supplied")] int? depth,
-        [FromQuery] [Required(ErrorMessage = "The blog post Id must be supplied")] string? blogpostId)
+
+    [HttpGet("/{commentId}/replies")]
+    public async Task<ActionResult<ReplyDto>> GetReplies(Guid commentId, int pageSize = 5, int page = 1)
     {
-        
+        ReplyDto? replyDto = await _commentService.GetReplies(commentId, pageSize, page);
+        if (replyDto is null)
+        {
+            return NotFound(new ApiErrorResponse()
+            {
+                StatusCode = 404,
+                Title = "comment not found.",
+                Detail = $"The comment with ID: {commentId} cannot be found"
+            });
+        }
+
+        return replyDto;
     }
 }
