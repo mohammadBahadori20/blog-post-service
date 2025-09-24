@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using BlogpostService.Application.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -48,7 +49,7 @@ public class BlogpostController : ControllerBase
     }
 
 
-    //user must be authenticated here.
+    [Authorize]
     [HttpPost("{blogpostId}/comments")]
     public async Task<ActionResult<CommentDto>> AddNewCommentForBlogpost([FromBody] CommentDto commentDto,
         [FromRoute] [Required] Guid blogpostId)
@@ -68,7 +69,7 @@ public class BlogpostController : ControllerBase
         return responseComment;
     }
 
-    //user must be authenticated here.
+    [Authorize]
     [HttpDelete("{blogpostId}")]
     public async Task<IActionResult> DeleteBlogpost([FromRoute] Guid blogpostId)
     {
@@ -86,9 +87,10 @@ public class BlogpostController : ControllerBase
         return NoContent();
     }
 
+    [Authorize]
     [HttpPut("{blogpostId}")]
     public async Task<ActionResult<UpdatedBlogpostDto>> UpdateBlogpost(
-        [Required(ErrorMessage = "The details for updating the blogpost are needed.")]
+        [Required(ErrorMessage = "details for updating the blogpost are needed.")]
         UpdatedBlogpostDto updatedBlogpost,
         [FromRoute] Guid blogpostId)
     {

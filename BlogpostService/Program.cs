@@ -1,5 +1,6 @@
 using System.Text;
 using BlogpostService.Infrastructure;
+using BlogpostService.Properties.Authorization_policies;
 using BlogpostService.Properties.Middlewares;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
@@ -77,6 +78,15 @@ public class Program
                 };
             });
 
+        builder.Services.AddAuthorization(options =>
+        {
+            options.AddPolicy("CanEditPost", policy =>
+            {
+                policy.RequireAuthenticatedUser();
+                policy.AddRequirements(new BlogpostAuthorizationRequirement());
+            });
+        });
+        
         var app = builder.Build();
 
         app.UseAuthentication();

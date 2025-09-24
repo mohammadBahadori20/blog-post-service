@@ -1,6 +1,8 @@
 using BlogpostService.Application;
 using BlogpostService.Domain;
 using BlogpostService.Infrastructure;
+using BlogpostService.Properties.Authorization_policies;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace BlogpostService.DependencyInjection;
@@ -13,5 +15,6 @@ public static class DependencyInjection
         service.AddTransient<IBlogpostService,Application.BlogpostService>();
         service.AddTransient<IBlogpostRepo,BlogpostRepo>();
         service.AddTransient<ICommentService,CommentService>();
+        service.AddScoped<IAuthorizationHandler, BlogpostAuthorizationHandler>();
     }
 }
