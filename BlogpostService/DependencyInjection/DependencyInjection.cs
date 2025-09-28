@@ -13,7 +13,7 @@ namespace BlogpostService.DependencyInjection
         
         public static void DependencyInjectionMapper(this IServiceCollection service)
         {
-            service.AddTransient<IUserServcie,AuthorService>();
+            service.AddTransient<IAuthorServcie,AuthorService>();
             service.AddTransient<IBlogpostService, Application.BlogpostService>();
             service.AddTransient<IBlogpostRepo, BlogpostRepo>();
             service.AddTransient<ICommentService, CommentService>();

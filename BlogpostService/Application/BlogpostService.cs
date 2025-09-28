@@ -9,19 +9,19 @@ public class BlogpostService : IBlogpostService
 {
     private readonly IBlogpostRepo _repo;
     private readonly IConfiguration _configuration;
-    private readonly IUserServcie _userService;
+    private readonly IAuthorServcie _authorService;
     private readonly string _host;
     private readonly string _scheme;
     private readonly string _port;
 
-    public BlogpostService(IBlogpostRepo repo, IConfiguration configuration, IUserServcie userService)
+    public BlogpostService(IBlogpostRepo repo, IConfiguration configuration, IAuthorServcie authorService)
     {
         _repo = repo;
         _configuration = configuration;
         _host = _configuration["host"]!;
         _port = _configuration["port"]!;
         _scheme = _configuration["scheme"]!;
-        _userService = userService;
+        _authorService = authorService;
     }
 
     public async Task<List<CommentDto>?> GetBlogpostCommentsById(Guid blogpostId, int pageSize, int page)

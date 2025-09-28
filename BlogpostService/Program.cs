@@ -1,4 +1,5 @@
 using System.Text;
+using BlogpostService.BlogpostService.Protos;
 using BlogpostService.Infrastructure;
 using BlogpostService.Properties.Authorization_policies;
 using BlogpostService.Properties.Middlewares;
@@ -88,6 +89,13 @@ public class Program
                 policy.RequireAuthenticatedUser();
                 policy.AddRequirements(new BlogpostAuthorizationRequirement());
             });
+        });
+        
+        builder.Services.AddGrpcClient<UserService.UserServiceClient>(options =>
+        {
+            string uri =
+                $"http://{builder.Configuration["GRPC_SERVER_HOST"]!}:{builder.Configuration["GRPC_SERVER_PORT"]!}"; 
+            options.Address = new Uri(uri);
         });
         
         builder.Services.DependencyInjectionMapper();
