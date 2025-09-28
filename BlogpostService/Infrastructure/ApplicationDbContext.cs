@@ -5,8 +5,14 @@ namespace BlogpostService.Infrastructure;
 
 public class ApplicationDbContext : DbContext
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> dbContextOptions) : base()
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> dbContextOptions,IConfiguration configuration) : base(dbContextOptions)
     {
+        // string conn = $"server={Environment.GetEnvironmentVariable("MYSQL_HOSTNAME")};" +
+        //            $"port={Environment.GetEnvironmentVariable("MYSQL_PORT")};" +
+        //            $"database={Environment.GetEnvironmentVariable("MYSQL_DATABASE")};" +
+        //            $"user={Environment.GetEnvironmentVariable("MYSQL_USER")};" +
+        //            $"password={Environment.GetEnvironmentVariable("MYSQL_PASSWORD")}";
+        // configuration["ConnectionStrings:DefaultConnection"] = conn;
     }
     
     public DbSet<Blogpost> Blogposts { get; set; }

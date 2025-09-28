@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using BlogpostService.DependencyInjection;
 
 namespace BlogpostService;
 
@@ -31,6 +32,7 @@ public class Program
                     {
                         StatusCode = StatusCodes.Status400BadRequest,
                         Title = "Validation failed",
+                        Detail = "unable to access the resources since user is unauthenticated",
                         Errors = errors
                     };
 
@@ -41,7 +43,8 @@ public class Program
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseMySql(
                 builder.Configuration.GetConnectionString("DefaultConnection"),
-                new MySqlServerVersion(new Version())
+                new MySqlServerVersion(new Version()),
+                mySqlOptions => mySqlOptions.EnableRetryOnFailure()
             ));
 
         builder.Services.AddAuthentication(options =>
@@ -87,8 +90,11 @@ public class Program
             });
         });
         
+        builder.Services.DependencyInjectionMapper();
+        
         var app = builder.Build();
 
+        
         app.UseAuthentication();
         app.UseAuthorization();
         app.UseMiddleware<ExceptionHandlerMiddleware>();

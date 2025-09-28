@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using BlogpostService.Application;
 using BlogpostService.Application.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

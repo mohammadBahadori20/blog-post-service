@@ -20,7 +20,7 @@ public class ExceptionHandlerMiddleware
         catch (Exception ex)
         {
             _logger.LogCritical($"internal servicer error has been occured from:{ex.Source}\n {ex.Message}");
-            context.Response.StatusCode = 401;
+            context.Response.StatusCode = 500;
             await context.Response.WriteAsJsonAsync(new
                 { status = 500, errorMessage = "internal server error has been occurred" });
         }

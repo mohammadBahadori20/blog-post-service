@@ -1,0 +1,17 @@
+syntax = "proto3";
+package BlogpostService.BlogpostService.protos;
+
+message AuthorDetailsRequest{
+  string userId = 1;
+}
+
+message AuthorDetailsResponse{
+  string user_id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string phone_number = 4;
+}
+
+service UserService{
+  rpc GetUserDetails(AuthorDetailsRequest) returns(AuthorDetailsResponse);
+}

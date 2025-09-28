@@ -15,7 +15,7 @@ public class BlogpostRepo : IBlogpostRepo
 
     public async Task<Blogpost?> GetBlogpostById(Guid blogpostId)
     {
-        return await _context.Blogposts.FindAsync(blogpostId.ToString());
+        return await _context.Blogposts.FindAsync(blogpostId);
     }
 
     public async Task AddNewBlogpostForAuthor(Blogpost blogpost)

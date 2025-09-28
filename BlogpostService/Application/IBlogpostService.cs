@@ -2,7 +2,7 @@ using BlogpostService.Application.DTOs;
 using BlogpostService.Domain;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BlogpostService.Infrastructure;
+namespace BlogpostService.Application;
 
 public interface IBlogpostService
 {
