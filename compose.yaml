@@ -1,11 +1,12 @@
 ﻿services:
-  mysql-container:
+  mysql-service:
     image: mysql:8.0
-    hostname: mysql-microservice
+    hostname: mysql-service
     ports:
       - "3307:3306"
     networks:
-      - microservice-network
+      - blogpost-microservice-network
+      - shared-network
     environment:
       MYSQL_ROOT_PASSWORD: 1234
       MYSQL_DATABASE: test
@@ -27,12 +28,23 @@
     ports:
       - "8080:8080"
     networks:
-      - microservice-network
+      - blogpost-microservice-network
+      - shared-network
     depends_on:
       - mysql-container
-
+  
+  redis-service:
+    image: redis
+    hostname: redis-service
+    ports:
+      - "6379:6379"
+    networks:
+      - blogpost-microservice-network
+      - shared-network
     
 
 networks:
-  microservice-network:
+  blogpost-microservice-network:
     driver: bridge
+  shared-network:
+    external: true
