@@ -1,31 +1,38 @@
 ﻿services:
   mysql-container:
-   image: mysql
-   hostname: mysql-microservice
-   ports: 
-    - "3306:3306"
-   networks:
-    - microservice-network
-   environment:
-     MYSQL_ROOT_PASSWORD: 1234
-     
+    image: mysql:8.0
+    hostname: mysql-microservice
+    ports:
+      - "3307:3306"
+    networks:
+      - microservice-network
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: test
+  
   blogpost-microservice:
-    build : ./BlogpostService/Dockerfile
+    build: .
     environment:
       DEFAULT_SCHEME: http
       DEFAULT_HOST: localhost
       DEFAULT_PORT: 8080
       MYSQL_PASSWORD: 1234
       MYSQL_HOSTNAME: mysql-microservice
+      MYSQL_USER: root
+      MYSQL_DATABASE: test
+      MYSQL_PORT: 3306
+      GRPC_SERVER_HOST: EWF
+      GRPC_SERVER_PORT: 3434
+      JWTKey: weasfklreweaser
     ports:
       - "8080:8080"
     networks:
       - microservice-network
-        
+    depends_on:
+      - mysql-container
+
+    
+
 networks:
   microservice-network:
     driver: bridge
-   
-   
-
-
