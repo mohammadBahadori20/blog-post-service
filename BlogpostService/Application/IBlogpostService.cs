@@ -15,5 +15,7 @@ public interface IBlogpostService
     public Task<bool> DeleteBlogpost(Guid blogpostId);
 
     public Task<BlogpostDto?> UpdateBlogpost(UpdatedBlogpostDto updatedBlogpost, Guid blogpostId);
-    
+
+    public Task<BlogpostDto?> GetBlogpost(Guid blogpostId);
+
 }

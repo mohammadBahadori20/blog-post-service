@@ -1,8 +1,10 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 using BlogpostService.Application;
 using BlogpostService.Application.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 
 
 namespace BlogpostService.Infrastructure;
@@ -12,14 +14,42 @@ namespace BlogpostService.Infrastructure;
 public class BlogpostController : ControllerBase
 {
     private readonly IBlogpostService _blogpostService;
+    private readonly IDistributedCache _cache;
 
-    public BlogpostController(IBlogpostService blogpostService)
+    public BlogpostController(IBlogpostService blogpostService, IDistributedCache cache)
     {
         _blogpostService = blogpostService;
+        _cache = cache;
     }
 
-
     [HttpGet("{blogpostId:guid}")]
+    public async Task<ActionResult<BlogpostDto>> GetBlogpost(Guid blogpostId)
+    {
+        string key = $"blogpost:{blogpostId}";
+        string? cachedBlogpost = await _cache.GetStringAsync(key);
+        
+        if (cachedBlogpost is not null)
+        {
+            BlogpostDto blogpost = JsonSerializer.Deserialize<BlogpostDto>(cachedBlogpost)!;
+            return Ok(blogpost);
+        }
+
+        BlogpostDto? blogpostDto = await _blogpostService.GetBlogpost(blogpostId);
+        if (blogpostDto is null)
+        {
+            return NotFound(new ApiErrorResponse()
+            {
+                StatusCode = 404,
+                Title = "blog post not found.",
+                Detail = $"The blogpost with ID: {blogpostId} cannot be found"
+            });
+        }
+
+        return Ok(blogpostDto);
+
+    }
+
+    [HttpGet("{blogpostId:guid}/comments")]
     public async Task<ActionResult<List<CommentDto>>> GetBlogpostComments(
         [FromRoute] Guid blogpostId, [FromQuery] int pageSize = 2, [FromQuery] int page = 1)
     {
@@ -56,7 +86,8 @@ public class BlogpostController : ControllerBase
         [FromRoute] [Required] Guid blogpostId)
     {
         string authorId = User.Claims.FirstOrDefault(c => c.Type == "sub")!.Value;
-        CommentDto? responseComment = await _blogpostService.AddCommentForBlogpost(commentDto, blogpostId, Guid.Parse(authorId));
+        CommentDto? responseComment =
+            await _blogpostService.AddCommentForBlogpost(commentDto, blogpostId, Guid.Parse(authorId));
         if (responseComment is null)
         {
             return NotFound(new ApiErrorResponse()

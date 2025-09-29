@@ -24,6 +24,24 @@ public class BlogpostService : IBlogpostService
         _authorService = authorService;
     }
 
+    public async Task<BlogpostDto?> GetBlogpost(Guid blogpostId)
+    {
+        var blogpost = await _repo.GetBlogpostById(blogpostId);
+        
+        if (blogpost is null)
+        {
+            return null;
+        }
+        
+        return new BlogpostDto()
+        {
+            BlogPostId = blogpostId,
+            Description = blogpost.Description,
+            Title = blogpost.Title,
+            Comments = new Uri($"{_scheme}://{_host}:{_port}/api/blogpost/{blogpost.BlogPostId}/comments")
+        };
+    }
+
     public async Task<List<CommentDto>?> GetBlogpostCommentsById(Guid blogpostId, int pageSize, int page)
     {
         

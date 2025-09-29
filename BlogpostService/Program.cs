@@ -97,6 +97,11 @@ public class Program
                 $"http://{builder.Configuration["GRPC_SERVER_HOST"]!}:{builder.Configuration["GRPC_SERVER_PORT"]!}"; 
             options.Address = new Uri(uri);
         });
+
+        builder.Services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = $"{builder.Configuration["REDIS_HOSTNAME"]}:{builder.Configuration["REDIS_PORT"]}";
+        });
         
         builder.Services.DependencyInjectionMapper();
         
