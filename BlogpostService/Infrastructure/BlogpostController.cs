@@ -2,10 +2,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using BlogpostService.Application;
 using BlogpostService.Application.DTOs;
+using BlogpostService.fault_tolerance_policies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
-using Polly;
 
 
 namespace BlogpostService.Infrastructure;
@@ -15,27 +14,31 @@ namespace BlogpostService.Infrastructure;
 public class BlogpostController : ControllerBase
 {
     private readonly IBlogpostService _blogpostService;
-    private readonly IDistributedCache _cache;
+    private readonly IDistributedRedisCache _cache;
 
-    public BlogpostController(IBlogpostService blogpostService, IDistributedCache cache)
+    public BlogpostController(IBlogpostService blogpostService, IDistributedRedisCache cache)
     {
         _blogpostService = blogpostService;
         _cache = cache;
     }
 
     [HttpGet("{blogpostId:guid}")]
-    public async Task<ActionResult<BlogpostDto>> GetBlogpost(Guid blogpostId)
+    public async Task<ActionResult<BlogpostDto>> GetBlogpost(Guid blogpostId, CancellationToken cancellationToken = default)
     {
         string key = $"blogpost:{blogpostId}";
-        string? cachedBlogpost = await _cache.GetStringAsync(key);
-        
-        if (cachedBlogpost is not null)
+        string? jsonBlogpost = await _cache.GetStringAsync(key,cancellationToken);
+
+        if (jsonBlogpost is not null)
         {
-            BlogpostDto blogpost = JsonSerializer.Deserialize<BlogpostDto>(cachedBlogpost)!;
+            BlogpostDto blogpost = JsonSerializer.Deserialize<BlogpostDto>(jsonBlogpost)!;
             return Ok(blogpost);
         }
 
         BlogpostDto? blogpostDto = await _blogpostService.GetBlogpost(blogpostId);
+        jsonBlogpost = JsonSerializer.Serialize(blogpostDto);
+
+        await _cache.SetStringAsync(key,jsonBlogpost,cancellationToken);
+        
         if (blogpostDto is null)
         {
             return NotFound(new ApiErrorResponse()
@@ -46,25 +49,35 @@ public class BlogpostController : ControllerBase
             });
         }
 
-        
-        var options = new DistributedCacheEntryOptions()
-            .SetAbsoluteExpiration(TimeSpan.FromMinutes(30))
-            .SetSlidingExpiration(TimeSpan.FromMinutes(5));
-        
         string blogpostDtoJson = JsonSerializer.Serialize(blogpostDto);
-        
-        await _cache.SetStringAsync(key,blogpostDtoJson,options);
-        
-        return Ok(blogpostDto);
 
+        await _cache.SetStringAsync(key, blogpostDtoJson, cancellationToken);
+
+        return Ok(blogpostDto);
     }
 
     [HttpGet("{blogpostId:guid}/comments")]
     public async Task<ActionResult<List<CommentDto>>> GetBlogpostComments(
-        [FromRoute] Guid blogpostId, [FromQuery] int pageSize = 2, [FromQuery] int page = 1)
+        [FromRoute] Guid blogpostId, [FromQuery] int pageSize = 2, [FromQuery] int page = 1,
+        CancellationToken cancellationToken = default)
     {
+        string key = $"blogpost:{blogpostId}:comments:page:{page}:pageSize:{pageSize}";
+
+        string? jsonComments = await _cache.GetStringAsync(key,cancellationToken);
+
+        if (jsonComments is not null)
+        {
+            List<CommentDto> comments = JsonSerializer.Deserialize<List<CommentDto>>(jsonComments);
+            return Ok(comments);
+        }
+        
+        
         List<CommentDto>? commentDtos =
             await _blogpostService.GetBlogpostCommentsById(blogpostId, pageSize, page);
+
+        jsonComments = JsonSerializer.Serialize(commentDtos);
+        
+        await _cache.SetStringAsync(key, jsonComments,cancellationToken);
 
         if (commentDtos is null)
         {
@@ -75,8 +88,8 @@ public class BlogpostController : ControllerBase
                 Detail = $"The blogpost with ID: {blogpostId} cannot be found"
             });
         }
-
-        return commentDtos;
+        
+        return Ok(commentDtos);
     }
 
 
