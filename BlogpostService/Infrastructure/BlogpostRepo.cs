@@ -1,4 +1,3 @@
-
 using BlogpostService.Domain;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,15 +6,27 @@ namespace BlogpostService.Infrastructure;
 public class BlogpostRepo : IBlogpostRepo
 {
     private readonly ApplicationDbContext _context;
+    private readonly ILogger<BlogpostRepo> _logger;
 
-    public BlogpostRepo(ApplicationDbContext context)
+    public BlogpostRepo(ApplicationDbContext context, ILogger<BlogpostRepo> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     public async Task<Blogpost?> GetBlogpostById(Guid blogpostId)
     {
-        return await _context.Blogposts.FindAsync(blogpostId);
+        try
+        {
+            return await _context.Blogposts.FindAsync(blogpostId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "In {className}.{methodName} an error occured when accessing the database for blogpost ID:{blogpostId}",
+                nameof(BlogpostRepo), nameof(GetBlogpostById), blogpostId);
+            throw;
+        }
     }
 
     public async Task AddNewBlogpostForAuthor(Blogpost blogpost)
@@ -35,6 +46,7 @@ public class BlogpostRepo : IBlogpostRepo
         {
             return false;
         }
+
         _context.Blogposts.Remove(blogpost);
         await _context.SaveChangesAsync();
         return true;
@@ -44,5 +56,4 @@ public class BlogpostRepo : IBlogpostRepo
     {
         return await _context.Comments.FindAsync(commentId);
     }
-    
 }

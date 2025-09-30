@@ -5,6 +5,7 @@ using BlogpostService.Application.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
+using Polly;
 
 
 namespace BlogpostService.Infrastructure;
@@ -45,6 +46,15 @@ public class BlogpostController : ControllerBase
             });
         }
 
+        
+        var options = new DistributedCacheEntryOptions()
+            .SetAbsoluteExpiration(TimeSpan.FromMinutes(30))
+            .SetSlidingExpiration(TimeSpan.FromMinutes(5));
+        
+        string blogpostDtoJson = JsonSerializer.Serialize(blogpostDto);
+        
+        await _cache.SetStringAsync(key,blogpostDtoJson,options);
+        
         return Ok(blogpostDto);
 
     }
